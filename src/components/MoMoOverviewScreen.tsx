@@ -29,16 +29,17 @@ const quickActions = [
 
 interface MoMoOverviewScreenProps {
   onSendMoney: () => void;
+  darkMode?: boolean;
 }
 
-export function MoMoOverviewScreen({ onSendMoney }: MoMoOverviewScreenProps) {
+export function MoMoOverviewScreen({ onSendMoney, darkMode = false }: MoMoOverviewScreenProps) {
   const totalSpent = weeklyActivity.reduce((sum, day) => sum + day.amount, 0);
 
   return (
-    <div className="h-full flex flex-col p-6 bg-gradient-to-b from-yellow-50 to-white">
+    <div className={`h-full flex flex-col p-6 ${darkMode ? 'bg-gradient-to-b from-gray-900 to-gray-950' : 'bg-gradient-to-b from-yellow-50 to-white'}`}>
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-gray-800 mb-1">MoMo Press</h1>
+          <h1 className={`${darkMode ? 'text-gray-100' : 'text-gray-800'} mb-1`}>MoMo Press</h1>
           <p className="text-gray-400 text-sm">Welcome back!</p>
         </div>
         <button className="p-2">
@@ -69,20 +70,20 @@ export function MoMoOverviewScreen({ onSendMoney }: MoMoOverviewScreenProps) {
             <button
               key={index}
               onClick={index === 0 ? onSendMoney : undefined}
-              className="flex flex-col items-center gap-2 p-3 bg-white rounded-2xl shadow-sm hover:shadow-md transition-shadow"
+              className={`flex flex-col items-center gap-2 p-3 ${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-2xl shadow-sm hover:shadow-md transition-shadow`}
             >
               <div className={`${action.color} rounded-full p-3`}>
                 <Icon className="w-5 h-5 text-white" />
               </div>
-              <span className="text-xs text-gray-600 text-center leading-tight">{action.label}</span>
+              <span className={`text-xs ${darkMode ? 'text-gray-300' : 'text-gray-600'} text-center leading-tight`}>{action.label}</span>
             </button>
           );
         })}
       </div>
 
       {/* Spending Analytics */}
-      <div className="bg-white rounded-3xl p-6 shadow-sm mb-6">
-        <p className="text-gray-600 text-sm mb-4">Spending This Week</p>
+      <div className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-3xl p-6 shadow-sm mb-6`}>
+        <p className={`${darkMode ? 'text-gray-300' : 'text-gray-600'} text-sm mb-4`}>Spending This Week</p>
         
         <div className="flex items-center justify-between mb-6">
           <div className="relative w-28 h-28">
@@ -105,7 +106,7 @@ export function MoMoOverviewScreen({ onSendMoney }: MoMoOverviewScreenProps) {
             </ResponsiveContainer>
             <div className="absolute inset-0 flex flex-col items-center justify-center">
               <p className="text-xs text-gray-400">Total</p>
-              <p className="text-sm text-gray-800">{totalSpent / 1000}k</p>
+              <p className={`text-sm ${darkMode ? 'text-gray-100' : 'text-gray-800'}`}>{totalSpent / 1000}k</p>
             </div>
           </div>
 
@@ -114,9 +115,9 @@ export function MoMoOverviewScreen({ onSendMoney }: MoMoOverviewScreenProps) {
               <div key={index} className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <div className="w-2 h-2 rounded-full" style={{ backgroundColor: cat.color }} />
-                  <span className="text-xs text-gray-600">{cat.name}</span>
+                  <span className={`text-xs ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>{cat.name}</span>
                 </div>
-                <span className="text-xs text-gray-800">{cat.value}%</span>
+                <span className={`text-xs ${darkMode ? 'text-gray-100' : 'text-gray-800'}`}>{cat.value}%</span>
               </div>
             ))}
           </div>
@@ -134,16 +135,16 @@ export function MoMoOverviewScreen({ onSendMoney }: MoMoOverviewScreenProps) {
 
       {/* Stats Grid */}
       <div className="grid grid-cols-3 gap-3">
-        <div className="bg-white rounded-2xl p-4 shadow-sm text-center">
-          <p className="text-gray-800 mb-1">24</p>
+        <div className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-2xl p-4 shadow-sm text-center`}>
+          <p className={`${darkMode ? 'text-gray-100' : 'text-gray-800'} mb-1`}>24</p>
           <p className="text-gray-400 text-xs">Transactions</p>
         </div>
-        <div className="bg-white rounded-2xl p-4 shadow-sm text-center">
-          <p className="text-gray-800 mb-1">12</p>
+        <div className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-2xl p-4 shadow-sm text-center`}>
+          <p className={`${darkMode ? 'text-gray-100' : 'text-gray-800'} mb-1`}>12</p>
           <p className="text-gray-400 text-xs">Sent</p>
         </div>
-        <div className="bg-white rounded-2xl p-4 shadow-sm text-center">
-          <p className="text-gray-800 mb-1">12</p>
+        <div className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-2xl p-4 shadow-sm text-center`}>
+          <p className={`${darkMode ? 'text-gray-100' : 'text-gray-800'} mb-1`}>12</p>
           <p className="text-gray-400 text-xs">Received</p>
         </div>
       </div>

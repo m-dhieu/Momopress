@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Eye, EyeOff } from 'lucide-react';
+import { Eye, EyeOff, Phone, Mail } from 'lucide-react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Checkbox } from './ui/checkbox';
@@ -9,6 +9,8 @@ interface LoginScreenProps {
 }
 
 export function LoginScreen({ onLogin }: LoginScreenProps) {
+  const [loginMethod, setLoginMethod] = useState<'phone' | 'email'>('phone');
+  const [phoneNumber, setPhoneNumber] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -17,7 +19,8 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     // Simple validation - in real app would verify credentials
-    if (email && password) {
+    const hasCredential = loginMethod === 'phone' ? phoneNumber : email;
+    if (hasCredential && password) {
       onLogin();
     }
   };
@@ -70,18 +73,63 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-5">
-            {/* Email/Username Input */}
-            <div>
-              <label className="text-gray-300 text-sm mb-2 block">Username/Email</label>
-              <Input
-                type="text"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="Enter your email"
-                className="bg-gray-800/50 border-gray-700 text-white placeholder:text-gray-500 focus:border-yellow-500 focus:ring-yellow-500/20 rounded-xl h-12"
-                required
-              />
+            {/* Login Method Toggle */}
+            <div className="flex gap-2 p-1 bg-gray-800/50 rounded-xl">
+              <button
+                type="button"
+                onClick={() => setLoginMethod('phone')}
+                className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg transition-all ${
+                  loginMethod === 'phone'
+                    ? 'bg-yellow-500 text-gray-900'
+                    : 'text-gray-400 hover:text-gray-300'
+                }`}
+              >
+                <Phone className="w-4 h-4" />
+                <span className="text-sm">Phone</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setLoginMethod('email')}
+                className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg transition-all ${
+                  loginMethod === 'email'
+                    ? 'bg-yellow-500 text-gray-900'
+                    : 'text-gray-400 hover:text-gray-300'
+                }`}
+              >
+                <Mail className="w-4 h-4" />
+                <span className="text-sm">Email</span>
+              </button>
             </div>
+
+            {/* Phone Number Input */}
+            {loginMethod === 'phone' && (
+              <div>
+                <label className="text-gray-300 text-sm mb-2 block">Phone Number</label>
+                <Input
+                  type="tel"
+                  value={phoneNumber}
+                  onChange={(e) => setPhoneNumber(e.target.value)}
+                  placeholder="+250 78X XXX XXX"
+                  className="bg-gray-800/50 border-gray-700 text-white placeholder:text-gray-500 focus:border-yellow-500 focus:ring-yellow-500/20 rounded-xl h-12"
+                  required
+                />
+              </div>
+            )}
+
+            {/* Email Input */}
+            {loginMethod === 'email' && (
+              <div>
+                <label className="text-gray-300 text-sm mb-2 block">Email Address</label>
+                <Input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="your.email@example.com"
+                  className="bg-gray-800/50 border-gray-700 text-white placeholder:text-gray-500 focus:border-yellow-500 focus:ring-yellow-500/20 rounded-xl h-12"
+                  required
+                />
+              </div>
+            )}
 
             {/* Password Input */}
             <div>

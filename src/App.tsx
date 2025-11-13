@@ -7,6 +7,7 @@ import { SpendingScreen } from './components/SpendingScreen';
 import { SettingsSheet } from './components/SettingsSheet';
 import { BudgetLimitsSheet, BudgetLimits, CategorySettings } from './components/BudgetLimitsSheet';
 import { LoginScreen } from './components/LoginScreen';
+import { OnboardingScreen, OnboardingSettings } from './components/OnboardingScreen';
 import { Toaster } from './components/ui/sonner';
 import { toast } from 'sonner@2.0.3';
 
@@ -15,9 +16,19 @@ type Screen = 'transactions' | 'overview' | 'spending' | 'send';
 const STORAGE_KEY = 'finance-app-budget-limits';
 const CATEGORY_SETTINGS_KEY = 'finance-app-category-settings';
 const AUTH_KEY = 'momo-press-authenticated';
+const ONBOARDING_KEY = 'momo-press-onboarding-complete';
+const ONBOARDING_SETTINGS_KEY = 'momo-press-onboarding-settings';
+const MONTHLY_SPENDING_KEY = 'momo-press-monthly-spending';
+const DARK_MODE_KEY = 'momo-press-dark-mode';
 
 export default function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [onboardingComplete, setOnboardingComplete] = useState(false);
+  const [onboardingSettings, setOnboardingSettings] = useState<OnboardingSettings>({
+    enableTransactionMessages: false,
+    monthlyLimit: 0,
+    enableWeeklyCheck: false,
+  });
   const [activeScreen, setActiveScreen] = useState<Screen>('overview');
   const [showSettings, setShowSettings] = useState(false);
   const [showSpendingTab, setShowSpendingTab] = useState(true);
@@ -25,12 +36,43 @@ export default function App() {
   const [budgetLimits, setBudgetLimits] = useState<BudgetLimits>({});
   const [categorySettings, setCategorySettings] = useState<{ [key: string]: CategorySettings }>({});
   const [hasShownAlerts, setHasShownAlerts] = useState(false);
+  const [monthlySpending, setMonthlySpending] = useState(0);
+  const [hasShownMonthlyAlert, setHasShownMonthlyAlert] = useState(false);
+  const [darkMode, setDarkMode] = useState(false);
 
-  // Check authentication on mount
+  // Check authentication and onboarding on mount
   useEffect(() => {
     const authStatus = localStorage.getItem(AUTH_KEY);
     if (authStatus === 'true') {
       setIsAuthenticated(true);
+    }
+
+    const onboardingStatus = localStorage.getItem(ONBOARDING_KEY);
+    if (onboardingStatus === 'true') {
+      setOnboardingComplete(true);
+    }
+
+    const savedOnboardingSettings = localStorage.getItem(ONBOARDING_SETTINGS_KEY);
+    if (savedOnboardingSettings) {
+      try {
+        setOnboardingSettings(JSON.parse(savedOnboardingSettings));
+      } catch (e) {
+        console.error('Failed to load onboarding settings', e);
+      }
+    }
+
+    const savedMonthlySpending = localStorage.getItem(MONTHLY_SPENDING_KEY);
+    if (savedMonthlySpending) {
+      try {
+        setMonthlySpending(parseFloat(savedMonthlySpending));
+      } catch (e) {
+        console.error('Failed to load monthly spending', e);
+      }
+    }
+
+    const savedDarkMode = localStorage.getItem(DARK_MODE_KEY);
+    if (savedDarkMode === 'true') {
+      setDarkMode(true);
     }
   }, []);
 
@@ -84,6 +126,21 @@ export default function App() {
     }
   }, [budgetLimits, hasShownAlerts]);
 
+  // Check for monthly limit violation
+  useEffect(() => {
+    if (hasShownMonthlyAlert || !onboardingSettings.monthlyLimit) return;
+
+    if (monthlySpending > onboardingSettings.monthlyLimit) {
+      const overage = monthlySpending - onboardingSettings.monthlyLimit;
+      toast.error('⚠️ MONTHLY LIMIT EXCEEDED', {
+        description: `ALERT: You have exceeded your monthly spending limit by RWF ${overage.toLocaleString()}. Current spending: RWF ${monthlySpending.toLocaleString()}.`,
+        duration: 8000,
+        className: 'bg-red-50 border-red-500',
+      });
+      setHasShownMonthlyAlert(true);
+    }
+  }, [monthlySpending, onboardingSettings.monthlyLimit, hasShownMonthlyAlert]);
+
   // If spending tab is disabled and we're on it, redirect to overview
   const handleToggleSpendingTab = (checked: boolean) => {
     setShowSpendingTab(checked);
@@ -136,14 +193,32 @@ export default function App() {
     toast.success('Logged out successfully');
   };
 
+  const handleToggleDarkMode = (enabled: boolean) => {
+    setDarkMode(enabled);
+    localStorage.setItem(DARK_MODE_KEY, enabled.toString());
+  };
+
+  const handleOnboardingComplete = (settings: OnboardingSettings) => {
+    setOnboardingSettings(settings);
+    setOnboardingComplete(true);
+    localStorage.setItem(ONBOARDING_KEY, 'true');
+    localStorage.setItem(ONBOARDING_SETTINGS_KEY, JSON.stringify(settings));
+    toast.success('Setup complete! Welcome to MoMo Press');
+  };
+
   // Show login screen if not authenticated
   if (!isAuthenticated) {
     return <LoginScreen onLogin={handleLogin} />;
   }
 
+  // Show onboarding screen if not complete
+  if (!onboardingComplete) {
+    return <OnboardingScreen onComplete={handleOnboardingComplete} />;
+  }
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-yellow-50 to-gray-100 flex items-center justify-center p-4">
-      <div className="w-full max-w-md h-[812px] bg-white rounded-[3rem] shadow-2xl overflow-hidden flex flex-col">
+    <div className={`min-h-screen ${darkMode ? 'bg-gradient-to-br from-gray-900 to-gray-800' : 'bg-gradient-to-br from-yellow-50 to-gray-100'} flex items-center justify-center p-4`}>
+      <div className={`w-full max-w-md h-[812px] ${darkMode ? 'bg-gray-950' : 'bg-white'} rounded-[3rem] shadow-2xl overflow-hidden flex flex-col`}>
         {/* Status Bar */}
         <div className="h-12 bg-gradient-to-r from-yellow-400 to-yellow-500 flex items-center justify-between px-6">
           <div className="flex items-center gap-2">
@@ -161,24 +236,32 @@ export default function App() {
 
         {/* Screen Content */}
         <div className="flex-1 overflow-auto">
-          {activeScreen === 'transactions' && <MoMoTransactionsScreen />}
-          {activeScreen === 'overview' && <MoMoOverviewScreen onSendMoney={() => setActiveScreen('send')} />}
+          {activeScreen === 'transactions' && <MoMoTransactionsScreen darkMode={darkMode} />}
+          {activeScreen === 'overview' && <MoMoOverviewScreen onSendMoney={() => setActiveScreen('send')} darkMode={darkMode} />}
           {activeScreen === 'spending' && (
             <SpendingScreen 
               budgetLimits={budgetLimits} 
               onOpenBudgetSettings={() => setShowBudgetLimits(true)}
+              darkMode={darkMode}
             />
           )}
-          {activeScreen === 'send' && <SendMoneyScreen categorySettings={categorySettings} />}
+          {activeScreen === 'send' && (
+            <SendMoneyScreen 
+              categorySettings={categorySettings}
+              enableTransactionMessages={onboardingSettings.enableTransactionMessages}
+              enableWeeklyCheck={onboardingSettings.enableWeeklyCheck}
+              darkMode={darkMode}
+            />
+          )}
         </div>
 
         {/* Bottom Navigation */}
-        <div className="bg-white border-t border-gray-100 px-6 py-4 pb-6">
+        <div className={`${darkMode ? 'bg-gray-900 border-gray-800' : 'bg-white border-gray-100'} border-t px-6 py-4 pb-6`}>
           <div className="flex items-center justify-around">
             <button
               onClick={() => setActiveScreen('overview')}
               className={`flex flex-col items-center gap-1 p-1 ${
-                activeScreen === 'overview' ? 'text-yellow-500' : 'text-gray-400'
+                activeScreen === 'overview' ? 'text-yellow-500' : darkMode ? 'text-gray-400' : 'text-gray-400'
               }`}
             >
               <Home className="w-5 h-5" />
@@ -187,7 +270,7 @@ export default function App() {
             <button
               onClick={() => setActiveScreen('send')}
               className={`flex flex-col items-center gap-1 p-1 ${
-                activeScreen === 'send' ? 'text-yellow-500' : 'text-gray-400'
+                activeScreen === 'send' ? 'text-yellow-500' : darkMode ? 'text-gray-400' : 'text-gray-400'
               }`}
             >
               <Send className="w-5 h-5" />
@@ -197,7 +280,7 @@ export default function App() {
               <button
                 onClick={() => setActiveScreen('spending')}
                 className={`flex flex-col items-center gap-1 p-1 ${
-                  activeScreen === 'spending' ? 'text-yellow-500' : 'text-gray-400'
+                  activeScreen === 'spending' ? 'text-yellow-500' : darkMode ? 'text-gray-400' : 'text-gray-400'
                 }`}
               >
                 <TrendingDown className="w-5 h-5" />
@@ -207,7 +290,7 @@ export default function App() {
             <button
               onClick={() => setActiveScreen('transactions')}
               className={`flex flex-col items-center gap-1 p-1 ${
-                activeScreen === 'transactions' ? 'text-yellow-500' : 'text-gray-400'
+                activeScreen === 'transactions' ? 'text-yellow-500' : darkMode ? 'text-gray-400' : 'text-gray-400'
               }`}
             >
               <Receipt className="w-5 h-5" />
@@ -223,6 +306,8 @@ export default function App() {
           showSpendingTab={showSpendingTab}
           onToggleSpendingTab={handleToggleSpendingTab}
           onLogout={handleLogout}
+          darkMode={darkMode}
+          onToggleDarkMode={handleToggleDarkMode}
         />
 
         {/* Budget Limits Sheet */}
@@ -232,6 +317,7 @@ export default function App() {
           budgetLimits={budgetLimits}
           onSaveLimits={handleSaveBudgetLimits}
           categorySettings={categorySettings}
+          darkMode={darkMode}
         />
 
         {/* Toast Notifications */}

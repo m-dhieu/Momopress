@@ -99,12 +99,12 @@ const getCategoryIcon = (category: string) => {
   }
 };
 
-export function MoMoTransactionsScreen() {
+export function MoMoTransactionsScreen({ darkMode = false }: { darkMode?: boolean }) {
   return (
-    <div className="h-full flex flex-col p-6 bg-gradient-to-b from-yellow-50 to-white">
+    <div className={`h-full flex flex-col p-6 ${darkMode ? 'bg-gradient-to-b from-gray-900 to-gray-950' : 'bg-gradient-to-b from-yellow-50 to-white'}`}>
       <div className="mb-6 flex items-start justify-between">
         <div>
-          <h1 className="text-gray-800 mb-1">Transactions</h1>
+          <h1 className={`${darkMode ? 'text-gray-100' : 'text-gray-800'} mb-1`}>Transactions</h1>
           <p className="text-gray-400 text-sm">All your MoMo Press activity</p>
         </div>
         <TransactionHistoryDownload />
@@ -117,30 +117,30 @@ export function MoMoTransactionsScreen() {
           <Input
             type="text"
             placeholder="Search transactions..."
-            className="pl-10 bg-white"
+            className={`pl-10 ${darkMode ? 'bg-gray-800 border-gray-700 text-gray-100' : 'bg-white'}`}
           />
         </div>
       </div>
 
       {/* Summary Cards */}
       <div className="grid grid-cols-2 gap-3 mb-6">
-        <div className="bg-white rounded-2xl p-4 shadow-sm">
+        <div className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-2xl p-4 shadow-sm`}>
           <div className="flex items-center gap-2 mb-2">
             <div className="bg-green-100 rounded-full p-2">
               <ArrowDownLeft className="w-4 h-4 text-green-600" />
             </div>
             <p className="text-gray-400 text-xs">Received</p>
           </div>
-          <p className="text-gray-800">RWF 45,000</p>
+          <p className={`${darkMode ? 'text-gray-100' : 'text-gray-800'}`}>RWF 45,000</p>
         </div>
-        <div className="bg-white rounded-2xl p-4 shadow-sm">
+        <div className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-2xl p-4 shadow-sm`}>
           <div className="flex items-center gap-2 mb-2">
             <div className="bg-red-100 rounded-full p-2">
               <ArrowUpRight className="w-4 h-4 text-red-600" />
             </div>
             <p className="text-gray-400 text-xs">Sent</p>
           </div>
-          <p className="text-gray-800">RWF 63,500</p>
+          <p className={`${darkMode ? 'text-gray-100' : 'text-gray-800'}`}>RWF 63,500</p>
         </div>
       </div>
 
@@ -151,7 +151,7 @@ export function MoMoTransactionsScreen() {
           const isReceived = transaction.type === 'received';
           
           return (
-            <div key={transaction.id} className="bg-white rounded-2xl p-4 shadow-sm">
+            <div key={transaction.id} className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-2xl p-4 shadow-sm`}>
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-3">
                   <div className={`rounded-full p-2 ${isReceived ? 'bg-green-100' : 'bg-red-100'}`}>
@@ -162,14 +162,14 @@ export function MoMoTransactionsScreen() {
                     )}
                   </div>
                   <div>
-                    <p className="text-gray-800">{transaction.recipient}</p>
+                    <p className={`${darkMode ? 'text-gray-100' : 'text-gray-800'}`}>{transaction.recipient}</p>
                     {transaction.phone && (
                       <p className="text-gray-400 text-xs">{transaction.phone}</p>
                     )}
                   </div>
                 </div>
                 <div className="text-right">
-                  <p className={`${isReceived ? 'text-green-600' : 'text-gray-800'}`}>
+                  <p className={`${isReceived ? 'text-green-600' : darkMode ? 'text-gray-100' : 'text-gray-800'}`}>
                     {isReceived ? '+' : ''}RWF {Math.abs(transaction.amount).toLocaleString()}
                   </p>
                   <Badge variant="outline" className="text-xs mt-1 border-yellow-300 text-yellow-700">

@@ -22,6 +22,7 @@ interface BudgetLimitsSheetProps {
   budgetLimits: BudgetLimits;
   onSaveLimits: (limits: BudgetLimits, categorySettings: { [key: string]: CategorySettings }) => void;
   categorySettings: { [key: string]: CategorySettings };
+  darkMode?: boolean;
 }
 
 const categories = [
@@ -38,7 +39,8 @@ export function BudgetLimitsSheet({
   onOpenChange, 
   budgetLimits, 
   onSaveLimits,
-  categorySettings
+  categorySettings,
+  darkMode = false
 }: BudgetLimitsSheetProps) {
   const [tempLimits, setTempLimits] = React.useState<BudgetLimits>(budgetLimits);
   const [tempSettings, setTempSettings] = React.useState<{ [key: string]: CategorySettings }>(categorySettings);
@@ -81,10 +83,10 @@ export function BudgetLimitsSheet({
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="bottom" className="h-[700px] rounded-t-3xl">
+      <SheetContent side="bottom" className={`h-[700px] rounded-t-3xl ${darkMode ? 'bg-gray-950' : ''}`}>
         <SheetHeader className="text-left">
-          <SheetTitle>Budget Limits & Controls</SheetTitle>
-          <SheetDescription>
+          <SheetTitle className={darkMode ? 'text-gray-100' : ''}>Budget Limits & Controls</SheetTitle>
+          <SheetDescription className={darkMode ? 'text-gray-400' : ''}>
             Set spending limits, block categories, and configure emergency plans
           </SheetDescription>
         </SheetHeader>
@@ -99,7 +101,7 @@ export function BudgetLimitsSheet({
               <div 
                 key={category.id} 
                 className={`rounded-xl p-4 border-2 ${
-                  isBlocked ? 'bg-red-50 border-red-200' : 'bg-gray-50 border-transparent'
+                  isBlocked ? 'bg-red-50 border-red-200' : darkMode ? 'bg-gray-800 border-transparent' : 'bg-gray-50 border-transparent'
                 }`}
               >
                 <div className="flex items-center justify-between mb-3">
@@ -111,7 +113,7 @@ export function BudgetLimitsSheet({
                       <Icon className="w-4 h-4" style={{ color: category.color }} />
                     </div>
                     <div>
-                      <Label htmlFor={category.id} className="text-gray-800">
+                      <Label htmlFor={category.id} className={darkMode ? 'text-gray-200' : 'text-gray-800'}>
                         {category.name}
                       </Label>
                       {isBlocked && (
@@ -124,7 +126,7 @@ export function BudgetLimitsSheet({
                   </div>
                   
                   <div className="flex items-center gap-2">
-                    <Label htmlFor={`block-${category.id}`} className="text-sm text-gray-600">
+                    <Label htmlFor={`block-${category.id}`} className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
                       Block
                     </Label>
                     <Switch
@@ -145,7 +147,7 @@ export function BudgetLimitsSheet({
                     value={tempLimits[category.id] || ''}
                     onChange={(e) => handleLimitChange(category.id, e.target.value)}
                     placeholder="No limit"
-                    className="flex-1"
+                    className={`flex-1 ${darkMode ? 'bg-gray-900 border-gray-700 text-gray-100' : ''}`}
                     disabled={isBlocked}
                   />
                   <span className="text-gray-400 text-sm">/ month</span>

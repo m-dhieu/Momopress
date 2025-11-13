@@ -18,26 +18,27 @@ const totalSpent = spendingCategories.reduce((sum, cat) => sum + cat.amount, 0);
 interface SpendingScreenProps {
   budgetLimits: BudgetLimits;
   onOpenBudgetSettings: () => void;
+  darkMode?: boolean;
 }
 
-export function SpendingScreen({ budgetLimits, onOpenBudgetSettings }: SpendingScreenProps) {
+export function SpendingScreen({ budgetLimits, onOpenBudgetSettings, darkMode = false }: SpendingScreenProps) {
   const categoriesExceedingLimit = spendingCategories.filter(
     cat => budgetLimits[cat.id] && cat.amount > budgetLimits[cat.id]
   );
   return (
-    <div className="h-full flex flex-col p-6 bg-gradient-to-b from-gray-50 to-white">
+    <div className={`h-full flex flex-col p-6 ${darkMode ? 'bg-gradient-to-b from-gray-900 to-gray-950' : 'bg-gradient-to-b from-gray-50 to-white'}`}>
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-gray-800 mb-1">Spending Breakdown</h1>
+          <h1 className={`${darkMode ? 'text-gray-100' : 'text-gray-800'} mb-1`}>Spending Breakdown</h1>
           <p className="text-gray-400 text-sm">Where your money goes</p>
         </div>
         <div className="flex items-center gap-2">
           <AnalyticsDownload budgetLimits={budgetLimits} />
           <button 
             onClick={onOpenBudgetSettings}
-            className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+            className={`p-2 ${darkMode ? 'hover:bg-gray-800' : 'hover:bg-gray-100'} rounded-full transition-colors`}
           >
-            <Settings className="w-5 h-5 text-gray-600" />
+            <Settings className={`w-5 h-5 ${darkMode ? 'text-gray-300' : 'text-gray-600'}`} />
           </button>
         </div>
       </div>
@@ -70,7 +71,7 @@ export function SpendingScreen({ budgetLimits, onOpenBudgetSettings }: SpendingS
       </div>
 
       {/* Donut Chart */}
-      <div className="bg-white rounded-3xl p-6 shadow-sm mb-6">
+      <div className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-3xl p-6 shadow-sm mb-6`}>
         <div className="flex items-center justify-center mb-4">
           <div className="relative w-48 h-48">
             <ResponsiveContainer width="100%" height="100%">
@@ -92,7 +93,7 @@ export function SpendingScreen({ budgetLimits, onOpenBudgetSettings }: SpendingS
             </ResponsiveContainer>
             <div className="absolute inset-0 flex flex-col items-center justify-center">
               <p className="text-gray-400 text-xs mb-1">Total</p>
-              <p className="text-gray-800 text-sm">{(totalSpent / 1000).toFixed(0)}k</p>
+              <p className={`${darkMode ? 'text-gray-100' : 'text-gray-800'} text-sm`}>{(totalSpent / 1000).toFixed(0)}k</p>
             </div>
           </div>
         </div>
@@ -102,7 +103,7 @@ export function SpendingScreen({ budgetLimits, onOpenBudgetSettings }: SpendingS
           {spendingCategories.slice(0, 4).map((category) => (
             <div key={category.name} className="flex items-center gap-2">
               <div className="w-3 h-3 rounded-full" style={{ backgroundColor: category.color }} />
-              <span className="text-gray-600 text-xs truncate">{category.name}</span>
+              <span className={`${darkMode ? 'text-gray-300' : 'text-gray-600'} text-xs truncate`}>{category.name}</span>
             </div>
           ))}
         </div>
@@ -110,7 +111,7 @@ export function SpendingScreen({ budgetLimits, onOpenBudgetSettings }: SpendingS
 
       {/* Category Breakdown List */}
       <div className="space-y-3 flex-1 overflow-auto">
-        <p className="text-gray-600 text-sm mb-3">Category Details</p>
+        <p className={`${darkMode ? 'text-gray-300' : 'text-gray-600'} text-sm mb-3`}>Category Details</p>
         
         {spendingCategories.map((category) => {
           const Icon = category.icon;
@@ -119,7 +120,7 @@ export function SpendingScreen({ budgetLimits, onOpenBudgetSettings }: SpendingS
           const limitPercentage = limit ? (category.amount / limit) * 100 : 0;
           
           return (
-            <div key={category.name} className={`bg-white rounded-2xl p-4 shadow-sm ${isOverLimit ? 'border-2 border-red-200' : ''}`}>
+            <div key={category.name} className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-2xl p-4 shadow-sm ${isOverLimit ? 'border-2 border-red-200' : ''}`}>
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-3">
                   <div 
@@ -130,14 +131,14 @@ export function SpendingScreen({ budgetLimits, onOpenBudgetSettings }: SpendingS
                   </div>
                   <div>
                     <div className="flex items-center gap-2">
-                      <p className="text-gray-800">{category.name}</p>
+                      <p className={`${darkMode ? 'text-gray-100' : 'text-gray-800'}`}>{category.name}</p>
                       {isOverLimit && <AlertTriangle className="w-4 h-4 text-red-500" />}
                     </div>
                     <p className="text-gray-400 text-xs">{category.percentage}% of spending</p>
                   </div>
                 </div>
                 <div className="text-right">
-                  <p className={`text-gray-800 ${isOverLimit ? 'text-red-600' : ''}`}>RWF {category.amount.toLocaleString()}</p>
+                  <p className={`${darkMode ? 'text-gray-100' : 'text-gray-800'} ${isOverLimit ? 'text-red-600' : ''}`}>RWF {category.amount.toLocaleString()}</p>
                   {limit > 0 && (
                     <p className="text-gray-400 text-xs">of RWF {limit.toLocaleString()}</p>
                   )}

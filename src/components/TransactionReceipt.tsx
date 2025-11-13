@@ -1,5 +1,5 @@
 import { Dialog, DialogContent } from './ui/dialog';
-import { CheckCircle2, Download, Share2, X } from 'lucide-react';
+import { CheckCircle2, Download, Share2, X, MessageSquare } from 'lucide-react';
 import { Button } from './ui/button';
 
 interface TransactionReceiptProps {
@@ -8,6 +8,7 @@ interface TransactionReceiptProps {
   transaction: {
     recipient: string;
     amount: number;
+    message?: string;
     type: string;
     phone?: string;
     transactionId: string;
@@ -106,6 +107,13 @@ export function TransactionReceipt({ open, onOpenChange, transaction }: Transact
       font-size: 12px;
       color: #92400e;
     }
+    .message {
+      background: #eff6ff;
+      padding: 12px;
+      border-radius: 6px;
+      margin: 15px 0;
+      border-left: 3px solid #3b82f6;
+    }
   </style>
 </head>
 <body>
@@ -148,6 +156,13 @@ export function TransactionReceipt({ open, onOpenChange, transaction }: Transact
         <span class="value">RWF ${transaction.balance.toLocaleString()}</span>
       </div>
     </div>
+    
+    ${transaction.message ? `
+    <div class="message">
+      <div style="font-size: 12px; color: #6b7280; margin-bottom: 5px;">📝 Note:</div>
+      <div style="color: #1f2937; font-size: 14px;">${transaction.message}</div>
+    </div>
+    ` : ''}
     
     <div class="transaction-id">
       <strong>Transaction ID:</strong><br>
@@ -222,6 +237,16 @@ export function TransactionReceipt({ open, onOpenChange, transaction }: Transact
                 <span className="text-sm text-gray-500">Type</span>
                 <span className="text-gray-900">{transaction.type}</span>
               </div>
+
+              {transaction.message && (
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 my-3">
+                  <div className="flex items-center gap-2 mb-1">
+                    <MessageSquare className="w-4 h-4 text-blue-600" />
+                    <span className="text-xs text-blue-800">Transaction Note:</span>
+                  </div>
+                  <p className="text-sm text-blue-900">{transaction.message}</p>
+                </div>
+              )}
               
               <div className="flex justify-between items-start">
                 <span className="text-sm text-gray-500">Date & Time</span>
